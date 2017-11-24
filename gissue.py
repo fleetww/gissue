@@ -25,21 +25,36 @@ def build_arg_parser():
 
     return args
 
+def print_single_issue(issue):
+    print("-----------------------------------------------------------------")
+    print("Title: " + issue["title"])
+    print("State: " + issue["state"])
+    print("Number: {}".format(issue["number"]))
+    print("User: " + issue["user"]["login"])
+    print("Created at: " + issue["created_at"])
+    print("Updated at: " + issue["updated_at"])
+    print("Body: " + issue["body"])
 
-args = build_arg_parser()
+def print_results(data):
+    #Only a single issue returned, not an array of issues
+    if (args.number != None):
+        print_single_issue(data)
+        print("-----------------------------------------------------------------")
+    else:
+        for issue in data:
+            print_single_issue(issue)
+        print("-----------------------------------------------------------------")
 
-url = build_url(args)
+if __name__ == "__main__":
+    args = build_arg_parser()
+    url = build_url(args)
 
-try:
-    response = urllib.request.urlopen(url)
-except:
-    print("Could not find the desired issues for that repo, sorry")
-    exit(0)
+    try:
+        response = urllib.request.urlopen(url)
+    except:
+        print("Could not find the desired issues for that repo, sorry")
+        exit(0)
 
-#Will only be a single issue if number specified, so in the future we must check
-#if the desired number was specified
-data = json.loads(response.read().decode())
-print("Title: " + data[0]["title"])
-print("Number: {}".format(data[0]["number"]))
-print("Body: " + data[0]["body"])
+    data = json.loads(response.read().decode())
 
+    print_results(data)

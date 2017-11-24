@@ -16,10 +16,10 @@ def build_url(args):
 
 def build_arg_parser():
     argparser = argparse.ArgumentParser(description="Retrieve issues for a given git repo on either github or gitlab.")
-    argparser.add_argument("-r", "--repo", nargs=1, required=True)
-    argparser.add_argument("-o", "--owner", nargs=1, required=True)
-    argparser.add_argument("-s", "--state", nargs=1)
-    argparser.add_argument("-n", "--number", nargs=1)
+    argparser.add_argument("-r", "--repo", nargs=1, required=True, dest='repo')
+    argparser.add_argument("-o", "--owner", nargs=1, required=True, dest='owner')
+    argparser.add_argument("-s", "--state", nargs=1, dest='state', choices=['open', 'closed', 'all'])
+    argparser.add_argument("-n", "--number", nargs=1, dest='number')
 
     args = argparser.parse_args()
 
@@ -29,7 +29,6 @@ def build_arg_parser():
 args = build_arg_parser()
 
 url = build_url(args)
-print(url)
 
 try:
     response = urllib.request.urlopen(url)
@@ -40,5 +39,7 @@ except:
 #Will only be a single issue if number specified, so in the future we must check
 #if the desired number was specified
 data = json.loads(response.read().decode())
-print(data)
+print("Title: " + data[0]["title"])
+print("Number: {}".format(data[0]["number"]))
+print("Body: " + data[0]["body"])
 

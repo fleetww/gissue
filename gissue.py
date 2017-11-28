@@ -4,24 +4,30 @@ import urllib.request, json
 import sys, argparse
 
 def build_url(args):
-    url = "https://api.github.com/repos/"+args.owner[0]+"/"+args.repo[0]+"/issues"
+    url = "https://api.github.com/repos/"+args.repo[0]+"/issues"
     #If user requested a single issue number, no reason to filter anything else
     if (args.number != None):
         url += "/" + args.number[0]
+        if (args.comments):
+            url += "/comments"
         return url
     url += "?"
     if (args.state != None):
         url += '&state=' + args.state[0]
     return url
 
-def build_arg_parser():
+def parse_args():
     argparser = argparse.ArgumentParser(description="Retrieve issues for a given git repo on either github or gitlab.")
-    argparser.add_argument("-r", "--repo", nargs=1, required=True, dest='repo')
-    argparser.add_argument("-o", "--owner", nargs=1, required=True, dest='owner')
+    argparser.add_argument("repo", nargs=1)
     argparser.add_argument("-s", "--state", nargs=1, dest='state', choices=['open', 'closed', 'all'])
     argparser.add_argument("-n", "--number", nargs=1, dest='number')
+    argparser.add_argument("-c", "--comments", action='store_true', dest='comments')
 
     args = argparser.parse_args()
+
+    if (args.comments and args.number == None):
+        print("Must supply a issue number to recieve comments")
+        exit(1)
 
     return args
 
@@ -45,8 +51,20 @@ def print_results(data):
             print_single_issue(issue)
         print("-----------------------------------------------------------------")
 
+def print_single_comment(comment):
+    print("-----------------------------------------------------------------")
+    print("User: " + comment["user"]["login"])
+    print("Created at: " + comment["created_at"])
+    print("Updated at: " + comment["updated_at"])
+    print("Body: " + comment["body"])
+
+def print_comments(data):
+    for comment in data:
+        print_single_comment(comment)
+        print("-----------------------------------------------------------------")
+
 if __name__ == "__main__":
-    args = build_arg_parser()
+    args = parse_args()
     url = build_url(args)
 
     try:
@@ -57,4 +75,7 @@ if __name__ == "__main__":
 
     data = json.loads(response.read().decode())
 
-    print_results(data)
+    if (args.comments):
+        print_comments(data)
+    else:
+        print_results(data)

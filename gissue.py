@@ -46,7 +46,7 @@ def parse_args():
     args = argparser.parse_args()
 
     if (args.comments and args.number == None):
-        print("Must supply a issue number to recieve comments")
+        print("Must supply a issue number to recieve comments.")
         exit(1)
 
     return args
@@ -69,7 +69,7 @@ def print_results(data):
     else:
         for issue in data:
             print_single_issue(issue)
-        print("-----------------------------------------------------------------")
+            print("-----------------------------------------------------------------")
 
 def print_single_comment(comment):
     print("-----------------------------------------------------------------")
@@ -100,6 +100,6 @@ if __name__ == "__main__":
             print_comments(comment_data)
 
     except:
-        print("Could not find the desired issues for that repo, sorry")
+        print("Could not find the desired issues for that repo, sorry.")
         exit(0)
 

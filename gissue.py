@@ -37,11 +37,19 @@ def build_comment_url(args):
     return url
 
 def parse_args():
-    argparser = argparse.ArgumentParser(description="Retrieve issues for a given git repo on either github or gitlab.")
-    argparser.add_argument("repo", nargs=1, help="The git repo that you wish to see the issues for.")
-    argparser.add_argument("-s", "--state", nargs=1, dest='state', choices=['open', 'closed', 'all'], help="Only show issues with the given state. This is ignored if a number is given.")
-    argparser.add_argument("-n", "--number", nargs=1, dest='number', help="The desired issue number to be shown.")
-    argparser.add_argument("-c", "--comments", action='store_true', dest='comments', help="Show the comments for this issue as well.")
+    argparser = argparse.ArgumentParser(description="Retrieve issues for a given git repo on github.")
+
+    repogroup = argparser.add_argument_group('Github Repository', 'The desired repository that you wish to see issues of.')
+    specificgroup = argparser.add_argument_group('Specific issue options', 'Operations relating to specific issues.')
+    editinggroup = argparser.add_mutually_exclusive_group()
+
+    repogroup.add_argument("repo", nargs=1, help="The git repo that you wish to see the issues for.")
+
+    argparser.add_argument("-s", nargs=1, dest='state', choices=['open', 'closed', 'all'], help="Only show issues with the given state. This is ignored if a number is given.")
+
+    specificgroup.add_argument("-n", nargs=1, dest='number', help="The desired issue number to be shown.")
+    specificgroup.add_argument("-c", action='store_true', dest='comments', help="Show the comments for this issue as well.")
+
 
     args = argparser.parse_args()
 

@@ -1,7 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -u
 
 import urllib.request, json
 import sys, argparse
+from prompt_toolkit import prompt
 
 def build_url(args):
     url = "https://api.github.com/repos/"+args.repo[0]+"/issues"
@@ -36,20 +37,33 @@ def build_comment_url(args):
 
     return url
 
+class CreateAction(argparse.Action):
+    def __init__(self, option_strings, dest, nargs=0, **kwargs):
+        super(CreateAction, self).__init__(option_strings, dest, **kwargs)
+    def __call__(self, parser, namespace, values, option_string=None):
+        #Get the body for the new issue from the user
+        print(values)
+        body = prompt('Enter the body of your new issue below (Esc+Enter to stop):\n', multiline=True)
+        print(body)
+        #Make the webapi call to create an issue
+        setattr(namespace, self.dest, 0)
+
 def parse_args():
     argparser = argparse.ArgumentParser(description="Retrieve issues for a given git repo on github.")
 
     repogroup = argparser.add_argument_group('Github Repository', 'The desired repository that you wish to see issues of.')
     specificgroup = argparser.add_argument_group('Specific issue options', 'Operations relating to specific issues.')
-    editinggroup = argparser.add_mutually_exclusive_group()
+    editinggroup = argparser.add_argument_group('Editing issues', 'Edit pre-existing issues or create a new one.')
 
-    repogroup.add_argument("repo", nargs=1, help="The git repo that you wish to see the issues for.")
+    repogroup.add_argument("repo", nargs=1, help="The git repo that you wish to see the issues for.\nFormat: owner/repo")
 
     argparser.add_argument("-s", nargs=1, dest='state', choices=['open', 'closed', 'all'], help="Only show issues with the given state. This is ignored if a number is given.")
 
     specificgroup.add_argument("-n", nargs=1, dest='number', help="The desired issue number to be shown.")
     specificgroup.add_argument("-c", action='store_true', dest='comments', help="Show the comments for this issue as well.")
 
+    editinggroup.add_argument("--create", action=CreateAction, help="Create an issue.")
+    editinggroup.add_argument("--update", nargs=2, dest='update', metavar=('NUM', 'STATE'), help="Change the state of the given issue.")
 
     args = argparser.parse_args()
 
@@ -96,7 +110,6 @@ if __name__ == "__main__":
 
     issue_url = build_issue_url(args)
     comment_url = build_comment_url(args)
-
 
     try:
         issue_response = urllib.request.urlopen(issue_url)
